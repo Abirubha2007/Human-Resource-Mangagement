@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #000000;
+  --color-primary-hover: #1a1a1a;
+  --color-charcoal: #333333;
+  --color-gray-light: #f5f5f5;
+  --color-gray-border: #e5e5e5;
+  
+  --color-status-success: #10b981; /* Green */
+  --color-status-warning: #f59e0b; /* Amber */
+  --color-status-error:   #ef4444; /* Red */
+}
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+  }
+}
