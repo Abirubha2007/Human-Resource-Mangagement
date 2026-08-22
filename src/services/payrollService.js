@@ -1,81 +1,49 @@
-import { demoPayroll } from '../data/payroll';
-
-const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
-
-const getStoredPayroll = () => {
-  const stored = localStorage.getItem('dayflow_payroll');
-  if (!stored) {
-    localStorage.setItem('dayflow_payroll', JSON.stringify(demoPayroll));
-    return demoPayroll;
-  }
-  return JSON.parse(stored);
-};
-
-const savePayroll = (records) => {
-  localStorage.setItem('dayflow_payroll', JSON.stringify(records));
-};
+import api from './api';
 
 export const payrollService = {
   getAll: async () => {
-    await delay();
-    return getStoredPayroll();
+    const response = await api.get('/payroll');
+    if (response.data && response.data.success) {
+      return response.data.data;
+    }
+    throw new Error(response.data?.error || 'Failed to fetch payroll records');
   },
 
   getByEmployeeId: async (employeeId) => {
-    await delay(300);
-    const records = getStoredPayroll();
-    return records.filter(rec => rec.employeeId === employeeId);
+    const currentUser = JSON.parse(localStorage.getItem('dayflow_user'));
+    if (currentUser && currentUser.id === employeeId) {
+      const response = await api.get('/payroll/me');
+      if (response.data && response.data.success) {
+        return response.data.data;
+      }
+    }
+    // Fallback for admin viewing specific employee payroll
+    const response = await api.get('/payroll');
+    if (response.data && response.data.success) {
+      return response.data.data.filter(rec => rec.employeeId === employeeId);
+    }
+    throw new Error(response.data?.error || 'Failed to fetch employee payroll');
   },
 
   processPayout: async (id) => {
-    await delay(600);
-    const records = getStoredPayroll();
-    const index = records.findIndex(rec => rec.id === id);
-    if (index === -1) throw new Error("Payroll slip not found");
-
-    records[index].status = "Processed";
-    records[index].processedDate = new Date().toISOString().split('T')[0];
-    
-    savePayroll(records);
-    return records[index];
+    const response = await api.put(`/payroll/${id}`, { status: 'Processed' });
+    if (response.data && response.data.success) {
+      return response.data.data;
+    }
+    throw new Error(response.data?.error || 'Failed to process payout');
   },
 
   updateSalaryDetails: async (employeeId, basicSalary, allowances, deductions) => {
-    await delay(600);
-    const records = getStoredPayroll();
-    
-    const basic = Number(basicSalary) || 0;
-    const allow = Number(allowances) || 0;
-    const deduct = Number(deductions) || 0;
-    const net = basic + allow - deduct;
-
-    const index = records.findIndex(rec => rec.employeeId === employeeId);
-    if (index !== -1) {
-      records[index] = {
-        ...records[index],
-        basicSalary: basic,
-        allowances: allow,
-        deductions: deduct,
-        netSalary: net
-      };
-    } else {
-      // Create new record
-      records.push({
-        id: `PAY-${Date.now()}`,
-        employeeId,
-        employeeName: "Employee",
-        department: "Engineering",
-        basicSalary: basic,
-        allowances: allow,
-        deductions: deduct,
-        netSalary: net,
-        status: "Pending",
-        payoutMonth: "August 2026",
-        processedDate: "-"
-      });
+    const response = await api.post('/payroll', {
+      employeeId,
+      basicSalary,
+      allowances,
+      deductions
+    });
+    if (response.data && response.data.success) {
+      return { success: true };
     }
-
-    savePayroll(records);
-    return { success: true };
+    throw new Error(response.data?.error || 'Failed to update salary details');
   }
 };
+
