@@ -27,6 +27,21 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Auto-redirect if already logged in
+  React.useEffect(() => {
+    const token = localStorage.getItem('dayflow_token');
+    const userStr = localStorage.getItem('dayflow_user');
+    if (token && userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        if (u.role === 'admin') navigate('/admin/dashboard', { replace: true });
+        else navigate('/employee/dashboard', { replace: true });
+      } catch (e) {
+        // invalid JSON, ignore
+      }
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!email || !password) {

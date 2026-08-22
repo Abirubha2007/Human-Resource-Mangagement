@@ -32,7 +32,7 @@ import EmployeeSettings from '../pages/employee/Settings';
 // Helper Guard: Must be Logged In
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-
+  
   if (loading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-white text-charcoal-900">
@@ -41,7 +41,10 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  const hasToken = !!localStorage.getItem('dayflow_token');
+  const hasUser = !!localStorage.getItem('dayflow_user');
+
+  return (isAuthenticated || (hasToken && hasUser)) ? children : <Navigate to="/login" replace />;
 };
 
 // Helper Guard: Must have correct Role
@@ -56,7 +59,19 @@ const RoleRoute = ({ children, allowedRoles = [] }) => {
     );
   }
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  let currentUser = user;
+  if (!currentUser) {
+    const userStr = localStorage.getItem('dayflow_user');
+    if (userStr) {
+      try {
+        currentUser = JSON.parse(userStr);
+      } catch (e) {
+        // ignore parse error
+      }
+    }
+  }
+
+  if (!currentUser || !allowedRoles.includes(currentUser.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
