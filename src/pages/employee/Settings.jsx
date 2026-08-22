@@ -14,7 +14,7 @@ import { PageHeader, Card, Button, Input } from '../../components/UI';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 
-const AdminSettings = () => {
+const EmployeeSettings = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
 
@@ -22,17 +22,17 @@ const AdminSettings = () => {
 
   // Profile Form state
   const [profile, setProfile] = useState({
-    firstName: user?.firstName || 'John',
-    lastName: user?.lastName || 'Doe',
-    email: user?.email || 'admin@dayflow.com',
-    phone: user?.phone || '+91 98765 43210'
+    firstName: user?.firstName || 'Sarah',
+    lastName: user?.lastName || 'Johnson',
+    email: user?.email || 'employee@dayflow.com',
+    phone: user?.phone || '+91 98765 43211'
   });
 
   // Notifications state
   const [notifPrefs, setNotifPrefs] = useState({
     emailNotif: true,
     leaveNotif: true,
-    attendanceNotif: false,
+    attendanceNotif: true,
     payrollNotif: true
   });
 
@@ -50,17 +50,17 @@ const AdminSettings = () => {
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
-    showToast("Profile information updated successfully.");
+    showToast("Profile details updated successfully.");
   };
 
   const handleSaveNotifs = () => {
-    showToast("Notification configurations saved.");
+    showToast("Preferences saved.");
   };
 
   const handleUpdatePassword = (e) => {
     e.preventDefault();
     if (!passwords.oldPass || !passwords.newPass || !passwords.confirmPass) {
-      setPassError("Please fill in all security fields.");
+      setPassError("All fields are required.");
       return;
     }
     if (passwords.newPass !== passwords.confirmPass) {
@@ -73,7 +73,7 @@ const AdminSettings = () => {
     }
 
     setPassError('');
-    showToast("Password updated successfully.");
+    showToast("Credentials updated.");
     setPasswords({ oldPass: '', newPass: '', confirmPass: '' });
   };
 
@@ -86,8 +86,8 @@ const AdminSettings = () => {
       
       {/* Page Title */}
       <PageHeader
-        title="Settings & Adjustments"
-        subtitle="Manage profiles, change security credentials, configure notifications, and theme settings."
+        title="Account Settings"
+        subtitle="Manage personal settings, notification channels, password security, and dashboard themes."
       />
 
       <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -99,7 +99,7 @@ const AdminSettings = () => {
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all text-left ${activeTab === 'profile' ? 'bg-charcoal-950 text-white' : 'text-charcoal-500 hover:bg-charcoal-50 hover:text-charcoal-900'}`}
           >
             <User className="w-4 h-4" />
-            <span>Profile Details</span>
+            <span>My Profile Info</span>
           </button>
           
           <button
@@ -115,7 +115,7 @@ const AdminSettings = () => {
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all text-left ${activeTab === 'security' ? 'bg-charcoal-950 text-white' : 'text-charcoal-500 hover:bg-charcoal-50 hover:text-charcoal-900'}`}
           >
             <Lock className="w-4 h-4" />
-            <span>Security & Access</span>
+            <span>Security Credentials</span>
           </button>
 
           <button
@@ -134,7 +134,7 @@ const AdminSettings = () => {
           {activeTab === 'profile' && (
             <Card className="animate-fade-in">
               <h4 className="text-sm font-bold text-charcoal-900 font-sans pb-3 border-b border-charcoal-50 mb-5">
-                Profile Details
+                Personal Information
               </h4>
               
               <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
@@ -146,13 +146,13 @@ const AdminSettings = () => {
                     className="w-16 h-16 rounded-full object-cover border border-charcoal-200"
                   />
                   <div>
-                    <span className="text-[10px] text-charcoal-400 font-bold block">Profile Picture</span>
+                    <span className="text-[10px] text-charcoal-400 font-bold block font-sans">Avatar Photo</span>
                     <button
                       type="button"
                       className="text-xs font-bold text-charcoal-950 hover:underline mt-1 block"
-                      onClick={() => showToast("Picture upload simulation triggered.")}
+                      onClick={() => showToast("Avatar upload simulation initiated.")}
                     >
-                      Update Avatar Photo
+                      Upload New Photo
                     </button>
                   </div>
                 </div>
@@ -185,7 +185,7 @@ const AdminSettings = () => {
                 </div>
 
                 <Button type="submit" variant="primary" icon={Save} className="self-end mt-2">
-                  Save Changes
+                  Save Details
                 </Button>
 
               </form>
@@ -196,12 +196,12 @@ const AdminSettings = () => {
           {activeTab === 'notifications' && (
             <Card className="animate-fade-in">
               <h4 className="text-sm font-bold text-charcoal-900 font-sans pb-3 border-b border-charcoal-50 mb-5">
-                Notification Preferences
+                Notifications Alerts Config
               </h4>
               
               <div className="flex flex-col gap-4">
                 <p className="text-xs text-charcoal-400 leading-relaxed font-semibold mb-2">
-                  Configure when and how you receive alerts and communications.
+                  Configure when you receive email and push notification summaries.
                 </p>
 
                 <div className="space-y-4">
@@ -214,9 +214,9 @@ const AdminSettings = () => {
                       className="rounded border-charcoal-300 text-charcoal-900 focus:ring-0 mt-0.5"
                     />
                     <div>
-                      <span className="text-xs font-bold text-charcoal-850 block">Email Alerts</span>
+                      <span className="text-xs font-bold text-charcoal-805 block">Email Summaries</span>
                       <span className="text-[10px] text-charcoal-400 mt-0.5 block leading-normal">
-                        Receive daily summaries, payroll digests, and announcement feeds in your inbox.
+                        Receive announcements, shift reminders, and monthly payslips processed messages.
                       </span>
                     </div>
                   </label>
@@ -229,9 +229,9 @@ const AdminSettings = () => {
                       className="rounded border-charcoal-300 text-charcoal-900 focus:ring-0 mt-0.5"
                     />
                     <div>
-                      <span className="text-xs font-bold text-charcoal-850 block">Leave System Updates</span>
+                      <span className="text-xs font-bold text-charcoal-805 block">Leave Application Updates</span>
                       <span className="text-[10px] text-charcoal-400 mt-0.5 block leading-normal">
-                        Receive push prompts when leave allocations are requested, approved, or rejected.
+                        Receive instant alerts when leave submissions are approved or rejected.
                       </span>
                     </div>
                   </label>
@@ -239,14 +239,14 @@ const AdminSettings = () => {
                   <label className="flex items-start gap-3 p-3 bg-charcoal-50/50 rounded-lg border border-charcoal-100 cursor-pointer select-none">
                     <input
                       type="checkbox"
-                      checked={notifPrefs.attendanceNotif}
-                      onChange={(e) => setNotifPrefs(prev => ({ ...prev, attendanceNotif: e.target.checked }))}
+                      checked={notifPrefs.payrollNotif}
+                      onChange={(e) => setNotifPrefs(prev => ({ ...prev, payrollNotif: e.target.checked }))}
                       className="rounded border-charcoal-300 text-charcoal-900 focus:ring-0 mt-0.5"
                     />
                     <div>
-                      <span className="text-xs font-bold text-charcoal-850 block">Attendance Check-In Reminders</span>
+                      <span className="text-xs font-bold text-charcoal-805 block">Payslip Ready Updates</span>
                       <span className="text-[10px] text-charcoal-400 mt-0.5 block leading-normal">
-                        Receive prompts if checking in is forgotten beyond designated shift timings.
+                        Receive notifications as soon as payslip breakdowns are computed and ready to download.
                       </span>
                     </div>
                   </label>
@@ -264,7 +264,7 @@ const AdminSettings = () => {
           {activeTab === 'security' && (
             <Card className="animate-fade-in">
               <h4 className="text-sm font-bold text-charcoal-900 font-sans pb-3 border-b border-charcoal-50 mb-5">
-                Security & Access Credentials
+                Change Account Password
               </h4>
               
               <form onSubmit={handleUpdatePassword} className="flex flex-col gap-4">
@@ -374,4 +374,4 @@ const AdminSettings = () => {
   );
 };
 
-export default AdminSettings;
+export default EmployeeSettings;

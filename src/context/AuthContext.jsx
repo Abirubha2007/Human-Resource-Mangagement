@@ -1,58 +1,78 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for saved user on mount
-    const savedUser = localStorage.getItem('dayflow_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    const checkCurrentUser = () => {
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+      }
+      setLoading(false);
+    };
+    checkCurrentUser();
   }, []);
 
   const login = async (email, password) => {
-    // Mock login logic
     setLoading(true);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (email === 'admin@dayflow.com') {
-          const adminUser = { id: 1, name: 'John Doe', email, role: 'admin' };
-          setUser(adminUser);
-          localStorage.setItem('dayflow_user', JSON.stringify(adminUser));
-          setLoading(false);
-          resolve(adminUser);
-        } else if (email === 'employee@dayflow.com') {
-          const empUser = { id: 2, name: 'Sarah Johnson', email, role: 'employee' };
-          setUser(empUser);
-          localStorage.setItem('dayflow_user', JSON.stringify(empUser));
-          setLoading(false);
-          resolve(empUser);
-        } else {
-          setLoading(false);
-          reject(new Error('Invalid credentials'));
-        }
-      }, 800);
-    });
+    try {
+      const data = await authService.login(email, password);
+      setUser(data.user);
+      return data.user;
+    } catch (error) {
+      setLoading(false);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('dayflow_user');
-    navigate('/login');
+  const signup = async (formData) => {
+    setLoading(true);
+    try {
+      const res = await authService.signup(formData);
+      return res;
+    } catch (error) {
+      setLoading(false);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
-}
+  const logout = async () => {
+    setLoading(true);
+    try {
+      await authService.logout();
+      setUser(null);
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-export const useAuth = () => useContext(AuthContext);
+  const value = {
+    user,
+    loading,
+    login,
+    signup,
+    logout,
+    isAuthenticated: !!user
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
